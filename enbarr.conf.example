@@ -1,0 +1,7 @@
+[RabbitMQ]
+host = 217.197.0.19
+port = 5672
+
+[Images]
+path = /home/aleks/virt/images
+
