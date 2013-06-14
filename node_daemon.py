@@ -89,7 +89,7 @@ class NodeDaemon(Daemon):
                 ans_msg={}
                 ans_msg['action'] = 'SAVED'
                 ans_msg['params']['uuid'] = message['params']['uuid']
-                ans_msg['params']['filename'] = message['params']['filename']
+                ans_msg['params']['filename'] = filename
                 convirt.close()
                 return ans_msg
 
