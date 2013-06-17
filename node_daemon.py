@@ -126,9 +126,11 @@ class NodeDaemon(Daemon):
                 sys.stdout.flush()
                 
                 ans_msg['action'] = 'ERROR'
-                ans_msg['params']['cause'] ='WRONG MESSAGE ACTION'
+                ans_msg['params']['cause'] = 'WRONG MESSAGE ACTION'
+                ans_msg['params']['on_action'] =  message['action']
 
                 return ans_msg
+                
         except KeyError as e:
             print " [ERROR] wrong message", e
             sys.stdout.flush()
@@ -137,13 +139,14 @@ class NodeDaemon(Daemon):
             ans_msg['params']['cause'] ='WRONG MESSAGE NOTATION'
 
             return ans_msg
-            
+
         except:
             print " [ERROR] unexpected error", sys.exc_info()[0]
             sys.stdout.flush()
             
             ans_msg['action'] = 'ERROR'
             ans_msg['params']['cause'] ='UNEXPECTED ERROR'
+            ans_msg['params']['on_action'] =  message['action']
 
             return ans_msg
 
