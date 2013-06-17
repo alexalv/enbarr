@@ -39,6 +39,9 @@ class NodeDaemon(Daemon):
         return files
 
     def switch_message(self, message):    
+        ans_msg = {}
+        ans_msg['params'] = {}
+
         try:
             if   message['action'] == "START"  :
                 user_img_path = self.img_path+"/users/"+message['params']['user_id']
@@ -59,9 +62,8 @@ class NodeDaemon(Daemon):
                 
                 dom = convirt.lookupByUUIDString(uuid)
                 
-                ans_msg = {}
+                
                 ans_msg['action'] = 'STARTED'
-                ans_msg['params'] = {}
                 ans_msg['params']['uuid'] = uuid
                 ans_msg['params']['server_uuid'] = self.uuid
                 ans_msg['params']['id'] = dom.ID()
@@ -75,9 +77,10 @@ class NodeDaemon(Daemon):
                 convirt = libvirt.open("qemu:///system")
                 dom = convirt.lookupByUUIDString(message['params']['uuid'])
                 dom.shutdown()
-                ans_msg={}
+
                 ans_msg['action'] = 'STOPPED'
                 ans_msg['params']['uuid'] = message['params']['uuid']
+
                 convirt.close()
                 return ans_msg
 
@@ -86,10 +89,11 @@ class NodeDaemon(Daemon):
                 dom = convirt.lookupByUUIDString(message['params']['uuid'])
                 filename = self.img_path+"/users/"+message['params']['user_id']+'/'+message['params']['uuid']+str(time.time())
                 dom.save(filename)
-                ans_msg={}
+
                 ans_msg['action'] = 'SAVED'
                 ans_msg['params']['uuid'] = message['params']['uuid']
                 ans_msg['params']['filename'] = filename
+
                 convirt.close()
                 return ans_msg
 
@@ -97,9 +101,10 @@ class NodeDaemon(Daemon):
                 convirt = libvirt.open("qemu:///system")
                 convirt.restore(message['params']['filename'])
                 dom = convirt.lookupByUUIDString(message['params']['uuid'])
-                ans_msg={}
+                
                 ans_msg['action'] = 'SAVESTARTED'
                 ans_msg['params']['uuid'] = message['params']['uuid']
+
                 convirt.close()
                 return ans_msg
                 
@@ -110,22 +115,42 @@ class NodeDaemon(Daemon):
             elif message['action'] == "REINDEX":
                 print " [yy] REINDEX"
                 sys.stdout.flush()
-                index = {}
-                index['action'] = 'INDEX'
-                index['items'] = self.reindex()
-                return index
+                
+                ans_msg['action'] = 'INDEX'
+                ans_msg['items'] = self.reindex()
+
+                return ans_msg
                 
             else:
                 print " [ERROR] wrong message"
                 sys.stdout.flush()
-        except KeyError:
-            print " [ERROR] wrong message"
+                
+                ans_msg['action'] = 'ERROR'
+                ans_msg['params']['cause'] ='WRONG MESSAGE ACTION'
+
+                return ans_msg
+        except KeyError as e:
+            print " [ERROR] wrong message", e
             sys.stdout.flush()
+            
+            ans_msg['action'] = 'ERROR'
+            ans_msg['params']['cause'] ='WRONG MESSAGE NOTATION'
+
+            return ans_msg
+            
+        except:
+            print " [ERROR] unexpected error", sys.exc_info()[0]
+            sys.stdout.flush()
+            
+            ans_msg['action'] = 'ERROR'
+            ans_msg['params']['cause'] ='UNEXPECTED ERROR'
+
+            return ans_msg
+
 
     def callback(self, ch, method, properties, body):
         io = StringIO(body)
         message = json.load(io)
-        print " [yy] GOT call"
         print " [yy] GOT message ", message
         sys.stdout.flush()
         payload = json.dumps(self.switch_message(message))
