@@ -52,7 +52,7 @@ class NodeDaemon(Daemon):
                 print " [yy] Startcopying"
                 sys.stdout.flush()
 
-                vc = Virtconf(memory = message['params']['memory'],
+                vc = Virtconf(memory = str(message['params']['memory']),
                               image = user_img_path+"/"+image_name,
                               user_id = message['params']['user_id'])
                 confstr = vc.xml_string()
@@ -185,8 +185,8 @@ if __name__ == "__main__":
         
 
         daemon = NodeDaemon('/tmp/enbarr-node-daemon.pid',
-                            stdout = "/home/aleks/1.txt",
-                            stderr = "/home/aleks/2.txt",
+                            stdout = config.get('Log', 'log'),
+                            stderr = config.get('Log', 'error'),
                             queue_name = "mng.to.node."+Nuuid,
                             routing_key = "mng.to.node."+Nuuid,
                             img_path = config.get('Images', 'path'),
